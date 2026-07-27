@@ -259,21 +259,33 @@ const Home: React.FC = () => {
       </section>
 
       {/* 9. Newsletter */}
-      <section className="py-24 bg-inverse-surface text-on-primary-container text-center border-b border-white/10">
-        <div className="max-w-[800px] mx-auto px-5 relative z-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-white">Stay Ahead of the Curve</h2>
-          <p className="text-outline-variant text-lg mb-10 max-w-lg mx-auto">Join 10,000+ top-tier students getting advanced study tactics and platform updates delivered weekly.</p>
-          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-            <input 
-              type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email address" 
-              required
-              className="px-6 py-4 rounded-xl bg-white/5 border border-white/10 text-white flex-grow focus:outline-none focus:border-primary focus:bg-white/10 transition-all placeholder:text-outline-variant" 
-            />
-            <button type="submit" className="bg-primary hover:bg-primary-container text-white px-8 py-4 rounded-xl font-bold transition-all duration-300">Subscribe</button>
-          </form>
+      <section className="py-24 bg-surface text-center">
+        <div className="max-w-[1000px] mx-auto px-5">
+          <div className="bg-primary/[0.03] border border-primary/10 rounded-[2.5rem] p-10 md:p-16 relative overflow-hidden">
+            {/* Subtle decorative glow */}
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/10 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/10 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
+
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-on-surface">Stay Ahead of the Curve</h2>
+              <p className="text-on-surface-variant text-lg mb-10 max-w-lg mx-auto">
+                Join 10,000+ top-tier students getting advanced study tactics and platform updates delivered weekly.
+              </p>
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+                <input 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address" 
+                  required
+                  className="px-6 py-4 rounded-xl bg-surface border border-outline-variant text-on-surface flex-grow focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-outline" 
+                />
+                <button type="submit" className="bg-primary hover:bg-primary-container text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                  Subscribe
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </section>
     </div>
