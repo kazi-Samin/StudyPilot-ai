@@ -17,7 +17,7 @@ const Navbar: React.FC = () => {
     <nav className="fixed w-full bg-surface/90 backdrop-blur-md z-50 border-b border-outline-variant h-[72px] flex items-center">
       <div className="max-w-[1280px] mx-auto w-full px-5 lg:px-12 flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold text-primary flex items-center gap-2">
-          <span className="material-symbols-outlined text-3xl">auto_stories</span>
+          <img src="/logo.svg" alt="StudyPilot Logo" className="w-8 h-8" />
           StudyPilot
         </Link>
 

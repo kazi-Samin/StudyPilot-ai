@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#bg)" />
+  
+  <!-- Open Book -->
+  <path d="M 25 85 Q 40 85 55 75 V 40 Q 40 50 25 50 Z" fill="white" opacity="0.9" />
+  <path d="M 95 85 Q 80 85 65 75 V 40 Q 80 50 95 50 Z" fill="white" opacity="0.7" />
+  
+  <!-- Paper Plane -->
+  <path d="M 40 60 L 85 30 L 70 75 L 60 60 Z" fill="#fef08a" />
+  <path d="M 40 60 L 60 60 L 55 70 Z" fill="#eab308" />
+</svg>
