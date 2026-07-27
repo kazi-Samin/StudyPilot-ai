@@ -1,33 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiMenu, FiX, FiUser, FiMoon, FiSun } from 'react-icons/fi';
+import { FiMenu, FiX, FiUser, FiSettings } from 'react-icons/fi';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Check initial theme preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      setIsDark(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    }
-    setIsDark(!isDark);
-  };
 
   const handleLogout = () => {
     logout();
@@ -48,21 +27,22 @@ const Navbar: React.FC = () => {
           <Link to="/about" className="hover:text-primary transition-colors">About</Link>
           <Link to="/ai-chat" className="hover:text-primary transition-colors">AI Chat</Link>
           
-          <button onClick={toggleTheme} className="text-xl p-2 rounded-full hover:bg-surface-container transition-colors text-on-surface-variant">
-            {isDark ? <FiSun /> : <FiMoon />}
-          </button>
-          
           {user ? (
             <>
               <Link to="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
               <Link to="/study-plans/manage" className="hover:text-primary transition-colors">My Plans</Link>
               <div className="group relative cursor-pointer">
                 <div className="flex items-center gap-2 text-primary font-semibold">
-                  <FiUser className="text-xl" />
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover border-2 border-primary" />
+                  ) : (
+                    <FiUser className="text-xl" />
+                  )}
                   {user.name}
                 </div>
                 <div className="absolute right-0 top-full mt-2 w-48 bg-surface rounded-xl shadow-lg border border-outline-variant opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all flex flex-col overflow-hidden">
                   <Link to="/study-plans/add" className="px-4 py-3 hover:bg-surface-container transition-colors">Create Plan</Link>
+                  <Link to="/settings" className="px-4 py-3 hover:bg-surface-container transition-colors flex items-center gap-2"><FiSettings /> Settings</Link>
                   <button onClick={handleLogout} className="px-4 py-3 text-left hover:bg-surface-container text-error transition-colors">Logout</button>
                 </div>
               </div>
@@ -75,11 +55,8 @@ const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Mobile Toggle & Theme */}
+        {/* Mobile Toggle */}
         <div className="md:hidden flex items-center gap-4">
-          <button onClick={toggleTheme} className="text-xl p-2 rounded-full hover:bg-surface-container transition-colors text-on-surface-variant">
-            {isDark ? <FiSun /> : <FiMoon />}
-          </button>
           <button className="text-2xl text-on-surface" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <FiX /> : <FiMenu />}
           </button>
@@ -97,6 +74,7 @@ const Navbar: React.FC = () => {
               <Link to="/dashboard" onClick={() => setIsOpen(false)} className="py-2">Dashboard</Link>
               <Link to="/study-plans/manage" onClick={() => setIsOpen(false)} className="py-2">My Plans</Link>
               <Link to="/study-plans/add" onClick={() => setIsOpen(false)} className="py-2">Create Plan</Link>
+              <Link to="/settings" onClick={() => setIsOpen(false)} className="py-2">Settings</Link>
               <button onClick={() => { handleLogout(); setIsOpen(false); }} className="py-2 text-left text-error">Logout</button>
             </>
           ) : (

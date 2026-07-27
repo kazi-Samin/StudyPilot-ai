@@ -22,6 +22,7 @@ import Dashboard from './pages/Dashboard';
 import AIChat from './pages/AIChat';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import ProfileSettings from './pages/ProfileSettings';
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/study-plans/add" element={<AddStudyPlan />} />
                     <Route path="/study-plans/manage" element={<ManageStudyPlans />} />
+                    <Route path="/settings" element={<ProfileSettings />} />
                   </Route>
                 </Routes>
               </main>
