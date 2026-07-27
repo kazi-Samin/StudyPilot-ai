@@ -23,6 +23,7 @@ import AIChat from './pages/AIChat';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import ProfileSettings from './pages/ProfileSettings';
+import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const AppLayout = () => {
             <Route path="/study-plans/manage" element={<ManageStudyPlans />} />
             <Route path="/settings" element={<ProfileSettings />} />
           </Route>
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       {!hideFooter && <Footer />}
