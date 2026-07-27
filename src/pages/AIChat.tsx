@@ -98,7 +98,7 @@ const AIChat: React.FC = () => {
       // Initialize Gemini SDK directly
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ 
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash',
         systemInstruction: 'You are a helpful, knowledgeable AI study tutor called "Cognitive AI Tutor" by StudyPilot. Help students understand concepts, create study plans, explain topics clearly, and motivate them to learn. Be concise yet thorough.'
       });
 
