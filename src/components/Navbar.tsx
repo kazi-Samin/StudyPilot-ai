@@ -1,42 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiMenu, FiX, FiUser, FiMoon, FiSun } from 'react-icons/fi';
-
-const LogoSVG = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary">
-    <rect width="32" height="32" rx="8" fill="currentColor" fillOpacity="0.1"/>
-    <path d="M9 16L16 9L23 16L16 23L9 16Z" fill="currentColor"/>
-    <circle cx="16" cy="16" r="3" fill="var(--color-background)"/>
-    <path d="M16 12L20 16L16 20L12 16L16 12Z" fill="currentColor" fillOpacity="0.5"/>
-  </svg>
-);
+import { FiMenu, FiX, FiUser } from 'react-icons/fi';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Check initial theme preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      setIsDark(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    }
-    setIsDark(!isDark);
-  };
 
   const handleLogout = () => {
     logout();
@@ -46,8 +16,8 @@ const Navbar: React.FC = () => {
   return (
     <nav className="fixed w-full bg-surface/90 backdrop-blur-md z-50 border-b border-outline-variant h-[72px] flex items-center">
       <div className="max-w-[1280px] mx-auto w-full px-5 lg:px-12 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-primary flex items-center gap-2 tracking-tight">
-          <LogoSVG />
+        <Link to="/" className="text-2xl font-bold text-primary flex items-center gap-2">
+          <span className="material-symbols-outlined text-3xl">menu_book</span>
           StudyPilot
         </Link>
 
@@ -56,10 +26,6 @@ const Navbar: React.FC = () => {
           <Link to="/explore" className="hover:text-primary transition-colors">Explore</Link>
           <Link to="/about" className="hover:text-primary transition-colors">About</Link>
           <Link to="/ai-chat" className="hover:text-primary transition-colors">AI Chat</Link>
-          
-          <button onClick={toggleTheme} className="text-xl p-2 rounded-full hover:bg-surface-container transition-colors text-on-surface-variant">
-            {isDark ? <FiSun /> : <FiMoon />}
-          </button>
           
           {user ? (
             <>
@@ -84,15 +50,10 @@ const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Mobile Toggle & Theme */}
-        <div className="md:hidden flex items-center gap-4">
-          <button onClick={toggleTheme} className="text-xl p-2 rounded-full hover:bg-surface-container transition-colors text-on-surface-variant">
-            {isDark ? <FiSun /> : <FiMoon />}
-          </button>
-          <button className="text-2xl text-on-surface" onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? <FiX /> : <FiMenu />}
-          </button>
-        </div>
+        {/* Mobile Toggle */}
+        <button className="md:hidden text-2xl" onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? <FiX /> : <FiMenu />}
+        </button>
       </div>
 
       {/* Mobile Menu */}

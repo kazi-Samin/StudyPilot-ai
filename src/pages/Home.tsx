@@ -259,16 +259,10 @@ const Home: React.FC = () => {
       </section>
 
       {/* 9. Newsletter */}
-      <section className="py-24 bg-gradient-to-r from-primary via-[#4f46e5] to-[#7e22ce] text-white text-center relative overflow-hidden">
-        {/* Decorative background elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
-          <div className="absolute -top-[100px] -left-[100px] w-[300px] h-[300px] rounded-full bg-white blur-[80px]"></div>
-          <div className="absolute top-[50%] right-[10%] w-[400px] h-[400px] rounded-full bg-secondary blur-[100px]"></div>
-        </div>
-
+      <section className="py-24 bg-inverse-surface text-on-primary-container text-center border-b border-white/10">
         <div className="max-w-[800px] mx-auto px-5 relative z-10">
-          <h2 className="text-4xl font-bold mb-4 tracking-tight">Stay ahead of the curve</h2>
-          <p className="text-white/80 text-lg mb-10 max-w-lg mx-auto">Join 10,000+ top-tier students getting advanced study tactics and platform updates delivered weekly.</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-white">Stay Ahead of the Curve</h2>
+          <p className="text-outline-variant text-lg mb-10 max-w-lg mx-auto">Join 10,000+ top-tier students getting advanced study tactics and platform updates delivered weekly.</p>
           <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
             <input 
               type="email" 
@@ -276,9 +270,9 @@ const Home: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address" 
               required
-              className="px-6 py-4 rounded-full text-on-surface flex-grow focus:outline-none focus:ring-4 focus:ring-secondary/50 shadow-lg placeholder:text-outline" 
+              className="px-6 py-4 rounded-xl bg-white/5 border border-white/10 text-white flex-grow focus:outline-none focus:border-primary focus:bg-white/10 transition-all placeholder:text-outline-variant" 
             />
-            <button type="submit" className="bg-secondary hover:bg-secondary-container hover:text-on-surface text-white px-8 py-4 rounded-full font-bold transition-all duration-300 shadow-lg hover:-translate-y-1">Subscribe</button>
+            <button type="submit" className="bg-primary hover:bg-primary-container text-white px-8 py-4 rounded-xl font-bold transition-all duration-300">Subscribe</button>
           </form>
         </div>
       </section>

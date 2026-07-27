@@ -2,15 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiTwitter, FiGithub, FiLinkedin, FiMail } from 'react-icons/fi';
 
-const LogoSVG = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary">
-    <rect width="32" height="32" rx="8" fill="currentColor" fillOpacity="0.15"/>
-    <path d="M9 16L16 9L23 16L16 23L9 16Z" fill="currentColor"/>
-    <circle cx="16" cy="16" r="3" fill="var(--color-inverse-surface)"/>
-    <path d="M16 12L20 16L16 20L12 16L16 12Z" fill="currentColor" fillOpacity="0.5"/>
-  </svg>
-);
-
 const Footer: React.FC = () => {
   return (
     <footer className="bg-inverse-surface text-on-primary-container pt-20 pb-10 border-t border-outline-variant/10 shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.3)]">
@@ -18,7 +9,7 @@ const Footer: React.FC = () => {
         
         <div className="md:col-span-5 lg:col-span-4">
           <Link to="/" className="text-2xl font-bold text-white flex items-center gap-2 mb-6 tracking-tight">
-            <LogoSVG />
+            <span className="material-symbols-outlined text-3xl">menu_book</span>
             StudyPilot
           </Link>
           <p className="text-outline-variant leading-relaxed text-sm">
