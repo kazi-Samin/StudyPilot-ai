@@ -60,17 +60,60 @@ const AIChat: React.FC = () => {
 
     try {
       // Keep only last few messages for context, and skip the initial AI greeting
-      // Gemini requires the first message in history to be from 'user'
-      const history = messages
-        .filter((m, index) => index !== 0) // Skip the hardcoded greeting
+      const historyToSend = messages
+        .filter((m, index) => index !== 0)
         .slice(-6)
         .map(m => ({ role: m.role === 'ai' ? 'model' : 'user', parts: [{ text: m.content }] }));
         
-      const response = await aiService.chat({ message: text, history });
+      // Add empty AI message placeholder
+      setMessages(prev => [...prev, { role: 'ai', content: '' }]);
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/ai/chat/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: historyToSend })
+      });
+
+      if (!response.body) throw new Error('ReadableStream not yet supported.');
       
-      setMessages(prev => [...prev, { role: 'ai', content: response.response }]);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        
+        const lines = chunk.split('\n\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6);
+            if (dataStr === '[DONE]') break;
+            try {
+              const data = JSON.parse(dataStr);
+              if (data.text) {
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  const lastIndex = newMessages.length - 1;
+                  newMessages[lastIndex] = { 
+                    ...newMessages[lastIndex], 
+                    content: newMessages[lastIndex].content + data.text 
+                  };
+                  return newMessages;
+                });
+              }
+            } catch(e) {}
+          }
+        }
+      }
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'ai', content: 'Sorry, I encountered an error. Please try again.' }]);
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastIndex = newMessages.length - 1;
+        newMessages[lastIndex] = { ...newMessages[lastIndex], content: 'Sorry, I encountered an error. Please try again.' };
+        return newMessages;
+      });
     } finally {
       setIsLoading(false);
     }
