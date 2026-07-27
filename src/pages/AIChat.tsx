@@ -9,9 +9,23 @@ interface Message {
 }
 
 const AIChat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', content: 'Hello! I am your StudyPilot AI tutor. How can I help you with your studies today?' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('studyPilot_aiChat');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing chat history:', e);
+      }
+    }
+    return [
+      { role: 'ai', content: 'Hello! I am your StudyPilot AI tutor. How can I help you with your studies today?' }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('studyPilot_aiChat', JSON.stringify(messages));
+  }, [messages]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -72,6 +86,17 @@ const AIChat: React.FC = () => {
                 <span className="w-2 h-2 rounded-full bg-secondary inline-block"></span> Online
               </div>
             </div>
+            <button 
+              onClick={() => {
+                if(window.confirm('Are you sure you want to clear the chat history?')) {
+                  setMessages([{ role: 'ai', content: 'Hello! I am your StudyPilot AI tutor. How can I help you with your studies today?' }]);
+                }
+              }}
+              className="ml-auto flex items-center justify-center p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors"
+              title="Clear Chat"
+            >
+              <span className="material-symbols-outlined text-[20px]">delete</span>
+            </button>
           </div>
 
           {/* Chat Area */}
