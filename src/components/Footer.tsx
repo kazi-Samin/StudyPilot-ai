@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
       <div className="max-w-[1280px] mx-auto px-5 lg:px-12 grid grid-cols-1 md:grid-cols-4 gap-10">
         <div>
           <Link to="/" className="text-2xl font-bold text-secondary-container flex items-center gap-2 mb-4">
-            <span className="material-symbols-outlined">flight_takeoff</span>
+            <span className="material-symbols-outlined">menu_book</span>
             StudyPilot
           </Link>
           <p className="text-outline-variant leading-relaxed">
