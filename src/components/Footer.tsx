@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
         
         <div className="md:col-span-5 lg:col-span-4">
           <Link to="/" className="text-2xl font-bold text-white flex items-center gap-2 mb-6 tracking-tight">
-            <span className="material-symbols-outlined text-3xl">menu_book</span>
+            <span className="material-symbols-outlined text-3xl">auto_stories</span>
             StudyPilot
           </Link>
           <p className="text-outline-variant leading-relaxed text-sm">
