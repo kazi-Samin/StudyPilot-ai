@@ -33,14 +33,38 @@ const About: React.FC = () => {
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Meet the Team</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {[1,2,3,4].map((i) => (
-              <div key={i} className="card p-6 text-center">
-                <div className="w-24 h-24 mx-auto rounded-full bg-surface-container-high mb-4"></div>
-                <h3 className="font-bold text-lg">Team Member {i}</h3>
-                <p className="text-secondary text-sm font-medium mb-3">Role</p>
-                <p className="text-on-surface-variant text-sm">Passionate about education and technology.</p>
+            <div className="card p-6 text-center">
+              <div className="w-24 h-24 mx-auto rounded-full bg-primary/20 text-primary flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-4xl">person</span>
               </div>
-            ))}
+              <h3 className="font-bold text-lg">Alex Mercer</h3>
+              <p className="text-secondary text-sm font-medium mb-3">Founder & CEO</p>
+              <p className="text-on-surface-variant text-sm">Former education researcher passionate about cognitive science.</p>
+            </div>
+            <div className="card p-6 text-center">
+              <div className="w-24 h-24 mx-auto rounded-full bg-secondary/20 text-secondary flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-4xl">psychology</span>
+              </div>
+              <h3 className="font-bold text-lg">Dr. Sarah Chen</h3>
+              <p className="text-secondary text-sm font-medium mb-3">Head of AI</p>
+              <p className="text-on-surface-variant text-sm">Lead architect behind our proprietary Cognitive AI Engine.</p>
+            </div>
+            <div className="card p-6 text-center">
+              <div className="w-24 h-24 mx-auto rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-4xl">code</span>
+              </div>
+              <h3 className="font-bold text-lg">Marcus Johnson</h3>
+              <p className="text-secondary text-sm font-medium mb-3">CTO</p>
+              <p className="text-on-surface-variant text-sm">Scaling our infrastructure to support millions of learners.</p>
+            </div>
+            <div className="card p-6 text-center">
+              <div className="w-24 h-24 mx-auto rounded-full bg-primary/20 text-primary flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-4xl">design_services</span>
+              </div>
+              <h3 className="font-bold text-lg">Elena Rodriguez</h3>
+              <p className="text-secondary text-sm font-medium mb-3">Lead Designer</p>
+              <p className="text-on-surface-variant text-sm">Crafting intuitive experiences for seamless studying.</p>
+            </div>
           </div>
         </div>
       </section>

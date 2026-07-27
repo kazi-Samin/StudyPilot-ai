@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studyPlanService } from '../services/studyPlanService';
+import { useStudyPlans } from '../hooks/useStudyPlans';
+import StudyPlanCard from '../components/StudyPlanCard';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -72,6 +74,13 @@ const StudyPlanDetails: React.FC = () => {
       toast.error('Failed to add review');
     }
   });
+
+  const { data: relatedPlansData } = useStudyPlans({
+    subject: plan?.subject,
+    limit: 4
+  });
+
+  const relatedPlans = relatedPlansData?.data?.filter((p: any) => p._id !== id).slice(0, 3) || [];
 
   if (planLoading) {
     return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div></div>;
@@ -167,6 +176,18 @@ const StudyPlanDetails: React.FC = () => {
               ))}
             </div>
           </section>
+
+          {/* Related Plans */}
+          {relatedPlans.length > 0 && (
+            <section className="pt-8 border-t border-outline-variant">
+              <h2 className="text-2xl font-bold mb-6">Related Plans</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {relatedPlans.map((relatedPlan: any) => (
+                  <StudyPlanCard key={relatedPlan._id} plan={relatedPlan} />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Sidebar */}
