@@ -43,13 +43,13 @@ function App() {
                   <Route path="/register" element={<Register />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
+                  <Route path="/ai-chat" element={<AIChat />} />
                   
                   {/* Protected Routes */}
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/study-plans/add" element={<AddStudyPlan />} />
                     <Route path="/study-plans/manage" element={<ManageStudyPlans />} />
-                    <Route path="/ai-chat" element={<AIChat />} />
                   </Route>
                 </Routes>
               </main>
