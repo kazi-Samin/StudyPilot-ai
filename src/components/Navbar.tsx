@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center gap-8 font-medium">
           <Link to="/explore" className="hover:text-primary transition-colors">Explore</Link>
           <Link to="/about" className="hover:text-primary transition-colors">About</Link>
-          <Link to="/ai-chat" className="hover:text-primary transition-colors">AI Chat</Link>
+          <Link to="/ai-chat" className="hover:text-primary transition-colors">AI Tutor</Link>
           
           {user ? (
             <>
@@ -68,7 +68,7 @@ const Navbar: React.FC = () => {
         <div className="absolute top-[72px] left-0 w-full bg-surface border-b border-outline-variant md:hidden p-5 flex flex-col gap-4 shadow-lg">
           <Link to="/explore" onClick={() => setIsOpen(false)} className="py-2">Explore</Link>
           <Link to="/about" onClick={() => setIsOpen(false)} className="py-2">About</Link>
-          <Link to="/ai-chat" onClick={() => setIsOpen(false)} className="py-2">AI Chat</Link>
+          <Link to="/ai-chat" onClick={() => setIsOpen(false)} className="py-2">AI Tutor</Link>
           {user ? (
             <>
               <Link to="/dashboard" onClick={() => setIsOpen(false)} className="py-2">Dashboard</Link>
