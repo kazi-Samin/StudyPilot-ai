@@ -57,6 +57,22 @@ const AIChat: React.FC = () => {
     scrollToBottom();
   }, [messages, isLoading]);
 
+  // Stop generation — cancels typewriter at current position
+  const handleStop = useCallback(() => {
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    // Finalize the partial message (remove cursor, mark as done)
+    setMessages(prev => {
+      const newMessages = [...prev];
+      const lastIndex = newMessages.length - 1;
+      if (lastIndex >= 0 && newMessages[lastIndex].role === 'ai') {
+        newMessages[lastIndex] = { ...newMessages[lastIndex], isTyping: false };
+      }
+      return newMessages;
+    });
+    setIsTyping(false);
+    setIsLoading(false);
+  }, []);
+
   // Typewriter effect: reveals text character by character
   const typewriterEffect = useCallback((fullText: string) => {
     setIsTyping(true);
@@ -269,13 +285,25 @@ const AIChat: React.FC = () => {
                 disabled={isLoading || isTyping}
                 className="flex-grow px-4 py-3 rounded-xl bg-surface-container-low border border-transparent focus:border-primary focus:bg-surface focus:outline-none text-sm disabled:opacity-60"
               />
-              <button
-                type="submit"
-                disabled={!input.trim() || isLoading || isTyping}
-                className="bg-primary text-white w-12 h-12 flex items-center justify-center rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
-              >
-                <span className="material-symbols-outlined">send</span>
-              </button>
+              {(isLoading || isTyping) ? (
+                // Stop button — visible while AI is loading/typing
+                <button
+                  type="button"
+                  onClick={handleStop}
+                  className="bg-error text-white w-12 h-12 flex items-center justify-center rounded-xl hover:opacity-90 transition-all shadow-md animate-pulse"
+                  title="Stop generating"
+                >
+                  <span className="material-symbols-outlined text-[20px]">stop</span>
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!input.trim()}
+                  className="bg-primary text-white w-12 h-12 flex items-center justify-center rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                  <span className="material-symbols-outlined">send</span>
+                </button>
+              )}
             </form>
           </div>
 
