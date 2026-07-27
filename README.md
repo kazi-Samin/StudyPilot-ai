@@ -1,7 +1,5 @@
 # StudyPilot AI 🚀
 
-![StudyPilot AI](public/logo.svg)
-
 StudyPilot AI is a comprehensive, production-ready Full Stack Agentic AI Application designed to revolutionize the way students learn and prepare for their studies. By leveraging the power of modern web technologies and Large Language Models (LLMs), StudyPilot provides personalized, adaptive study plans, cognitive analytics, and an interactive AI Tutor.
 
 ---
@@ -45,63 +43,6 @@ This project implements **two substantial Agentic AI features** that go beyond s
 - **Database:** MongoDB & Mongoose
 - **Authentication:** JWT (JSON Web Tokens)
 - **AI Integration:** Google Gemini API (`@google/generative-ai`)
-
----
-
-## 🚀 Getting Started
-
-Follow these instructions to set up the project locally.
-
-### Prerequisites
-
-- Node.js (v18 or higher)
-- npm or yarn
-- A Google Cloud Project (for OAuth Client ID)
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/kazi-Samin/StudyPilot-ai.git
-   cd StudyPilot-ai
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Set up Environment Variables:**
-   Create a `.env` file in the root directory and add the following variables:
-   ```env
-   # Your backend API URL (e.g., http://localhost:5000)
-   VITE_API_URL=your_backend_url_here
-
-   # Your Google OAuth Client ID for Social Login
-   VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
-   ```
-
-4. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
-   The application will be available at `http://localhost:5173`.
-
----
-
-## 📂 Project Structure
-
-```text
-src/
-├── components/       # Reusable UI components (Navbar, Cards, ProtectedRoute, etc.)
-├── context/          # React Context providers (AuthContext)
-├── hooks/            # Custom React hooks (TanStack Query hooks)
-├── pages/            # Page components (Home, Explore, Dashboard, AIChat, etc.)
-├── services/         # API integration services (axios instances)
-├── types/            # TypeScript interface definitions
-├── App.tsx           # Main application routing
-└── main.tsx          # Application entry point
-```
 
 ---
 
