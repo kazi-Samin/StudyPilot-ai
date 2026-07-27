@@ -59,8 +59,10 @@ const AppLayout = () => {
 };
 
 function App() {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '5819473927-1qek5cqr5irkou22bs8n7u9lebgejq45.apps.googleusercontent.com';
+  
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || 'dummy'}>
+    <GoogleOAuthProvider clientId={googleClientId}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <BrowserRouter>
