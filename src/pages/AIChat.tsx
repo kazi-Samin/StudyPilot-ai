@@ -1,14 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useAuth } from '../context/AuthContext';
 
 interface Message {
   role: 'user' | 'ai';
   content: string;
-  isStreaming?: boolean;
+  isTyping?: boolean;
 }
+
+const TYPING_SPEED = 8; // ms per character — faster = lower number
 
 const AIChat: React.FC = () => {
   const { user } = useAuth();
@@ -18,36 +19,20 @@ const AIChat: React.FC = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [apiKey, setApiKey] = useState('');
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isStreamingRef = useRef(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch API key from backend
-  useEffect(() => {
-    const fetchKey = async () => {
-      try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        const res = await fetch(`${apiUrl}/ai/key`);
-        const data = await res.json();
-        if (data.key) setApiKey(data.key);
-      } catch (e) {
-        console.error('Failed to fetch API key');
-      }
-    };
-    fetchKey();
-  }, []);
-
-  // Load chat history from localStorage
+  // Load chat history
   useEffect(() => {
     const saved = localStorage.getItem(storageKey);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Clean up any leftover streaming states from previous session
-        setMessages(parsed.map((m: Message) => ({ ...m, isStreaming: false })));
-      } catch (e) {
+        setMessages(parsed.map((m: Message) => ({ ...m, isTyping: false })));
+      } catch {
         setMessages([{ role: 'ai', content: 'Hello! I am your StudyPilot AI Tutor. How can I help you today?' }]);
       }
     } else {
@@ -56,108 +41,126 @@ const AIChat: React.FC = () => {
     setIsLoaded(true);
   }, [storageKey]);
 
-  // Save to localStorage (only stable, non-streaming messages)
+  // Save to localStorage (skip while typing)
   useEffect(() => {
-    if (isLoaded && messages.length > 0 && !isStreamingRef.current) {
+    if (isLoaded && messages.length > 0 && !isTyping) {
       const toSave = messages.map(m => ({ role: m.role, content: m.content }));
       localStorage.setItem(storageKey, JSON.stringify(toSave));
     }
-  }, [messages, storageKey, isLoaded]);
+  }, [messages, storageKey, isLoaded, isTyping]);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const handleSend = async (text: string = input) => {
-    if (!text.trim() || isLoading) return;
+  // Typewriter effect: reveals text character by character
+  const typewriterEffect = useCallback((fullText: string) => {
+    setIsTyping(true);
+    let index = 0;
 
-    const userMessage: Message = { role: 'user', content: text };
-    setMessages(prev => [...prev, userMessage]);
+    // Add empty AI bubble
+    setMessages(prev => [...prev, { role: 'ai', content: '', isTyping: true }]);
+
+    const type = () => {
+      if (index < fullText.length) {
+        const chunk = fullText.slice(0, index + 1);
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastIndex = newMessages.length - 1;
+          newMessages[lastIndex] = { role: 'ai', content: chunk, isTyping: true };
+          return newMessages;
+        });
+        index++;
+        // Variable speed: faster for spaces, slower for punctuation
+        const char = fullText[index - 1];
+        const delay = '.!?'.includes(char) ? TYPING_SPEED * 8 : char === ',' ? TYPING_SPEED * 3 : TYPING_SPEED;
+        typingTimeoutRef.current = setTimeout(type, delay);
+      } else {
+        // Done typing
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastIndex = newMessages.length - 1;
+          newMessages[lastIndex] = { role: 'ai', content: fullText, isTyping: false };
+          return newMessages;
+        });
+        setIsTyping(false);
+      }
+    };
+
+    typingTimeoutRef.current = setTimeout(type, TYPING_SPEED);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
+
+  const handleSend = async (text: string = input) => {
+    if (!text.trim() || isLoading || isTyping) return;
+
+    // Stop any current typewriter
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    setMessages(prev => [...prev, { role: 'user', content: text }]);
     setInput('');
     setIsLoading(true);
-    isStreamingRef.current = true;
 
     try {
-      if (!apiKey) {
-        throw new Error('API key not loaded yet. Please try again.');
-      }
-
-      // Build chat history (skip the first greeting message)
       const history = messages
         .filter((_, index) => index !== 0)
         .slice(-8)
         .map(m => ({
-          role: m.role === 'ai' ? 'model' as const : 'user' as const,
+          role: m.role === 'ai' ? 'model' : 'user',
           parts: [{ text: m.content }],
         }));
 
-      // Initialize Gemini SDK directly
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.0-flash-lite',
-        systemInstruction: 'You are a helpful, knowledgeable AI study tutor called "Cognitive AI Tutor" by StudyPilot. Help students understand concepts, create study plans, explain topics clearly, and motivate them to learn. Be concise yet thorough.'
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/ai/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history }),
       });
 
-      const chat = model.startChat({ history });
-
-      // Add empty placeholder bubble
-      setMessages(prev => [...prev, { role: 'ai', content: '', isStreaming: true }]);
-      setIsLoading(false); // Hide loading dots since streaming bubble is shown
-
-      // Stream the response
-      const result = await chat.sendMessageStream(text);
-
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        if (chunkText) {
-          setMessages(prev => {
-            const newMessages = [...prev];
-            const lastIndex = newMessages.length - 1;
-            newMessages[lastIndex] = {
-              ...newMessages[lastIndex],
-              content: newMessages[lastIndex].content + chunkText,
-              isStreaming: true,
-            };
-            return newMessages;
-          });
-        }
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Request failed');
       }
 
-      // Mark streaming as complete
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastIndex = newMessages.length - 1;
-        newMessages[lastIndex] = { ...newMessages[lastIndex], isStreaming: false };
-        return newMessages;
-      });
+      const data = await response.json();
+      const fullText = data.response || '';
+
+      setIsLoading(false);
+      typewriterEffect(fullText);
 
     } catch (error: any) {
-      console.error('AI Chat Error:', error);
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastIndex = newMessages.length - 1;
-        // If the last message is an empty AI placeholder, update it
-        if (lastIndex >= 0 && newMessages[lastIndex].role === 'ai' && newMessages[lastIndex].content === '') {
-          newMessages[lastIndex] = { role: 'ai', content: `Sorry, I encountered an error: ${error.message || 'Please try again.'}`, isStreaming: false };
-        } else {
-          newMessages.push({ role: 'ai', content: `Sorry, I encountered an error: ${error.message || 'Please try again.'}` });
-        }
-        return newMessages;
-      });
-    } finally {
       setIsLoading(false);
-      isStreamingRef.current = false;
+      setMessages(prev => [
+        ...prev,
+        { role: 'ai', content: `⚠️ ${error.message || 'Something went wrong. Please try again.'}` }
+      ]);
+    }
+  };
+
+  const handleClearChat = () => {
+    if (window.confirm('Are you sure you want to clear the chat history?')) {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      setIsTyping(false);
+      const greeting = { role: 'ai' as const, content: 'Hello! I am your StudyPilot AI Tutor. How can I help you today?' };
+      setMessages([greeting]);
+      localStorage.setItem(storageKey, JSON.stringify([greeting]));
     }
   };
 
   const suggestions = [
-    "Explain quantum computing simply",
-    "Create a 3-day exam review schedule",
-    "How to stop procrastinating?",
+    'Explain quantum computing simply',
+    'Create a 3-day exam review schedule',
+    'How to stop procrastinating?',
   ];
 
   return (
@@ -167,23 +170,18 @@ const AIChat: React.FC = () => {
 
           {/* Header */}
           <div className="p-4 border-b border-outline-variant bg-surface-container flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0">
               <span className="material-symbols-outlined">smart_toy</span>
             </div>
             <div>
               <h2 className="font-bold">Cognitive AI Tutor</h2>
               <div className="text-xs text-secondary font-medium flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-secondary inline-block animate-pulse"></span> Online
+                <span className="w-2 h-2 rounded-full bg-secondary inline-block animate-pulse"></span>
+                {isTyping ? 'Typing...' : 'Online'}
               </div>
             </div>
             <button
-              onClick={() => {
-                if (window.confirm('Are you sure you want to clear the chat history?')) {
-                  const greeting = { role: 'ai' as const, content: 'Hello! I am your StudyPilot AI Tutor. How can I help you today?' };
-                  setMessages([greeting]);
-                  localStorage.setItem(storageKey, JSON.stringify([greeting]));
-                }
-              }}
+              onClick={handleClearChat}
               className="ml-auto flex items-center justify-center p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors"
               title="Clear Chat"
             >
@@ -194,9 +192,9 @@ const AIChat: React.FC = () => {
           {/* Chat Area */}
           <div className="flex-grow overflow-y-auto p-5 space-y-5">
             {messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} items-start gap-2`}>
                 {msg.role === 'ai' && (
-                  <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center mr-2 mt-1 flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 mt-1">
                     <span className="material-symbols-outlined text-sm">smart_toy</span>
                   </div>
                 )}
@@ -208,20 +206,20 @@ const AIChat: React.FC = () => {
                   {msg.role === 'ai' ? (
                     <div className="markdown-body prose prose-sm max-w-none">
                       {msg.content ? (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {msg.content}
-                        </ReactMarkdown>
+                        <>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                          {msg.isTyping && (
+                            <span className="inline-block w-0.5 h-4 bg-primary ml-0.5 animate-pulse align-middle" />
+                          )}
+                        </>
                       ) : (
-                        // Streaming typing indicator while content is empty
-                        <div className="flex gap-1 py-1">
-                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
-                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                        <div className="flex gap-1.5 py-1 items-center">
+                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" />
+                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
                         </div>
-                      )}
-                      {/* Blinking cursor while streaming */}
-                      {msg.isStreaming && msg.content && (
-                        <span className="inline-block w-0.5 h-4 bg-primary ml-0.5 animate-pulse align-middle"></span>
                       )}
                     </div>
                   ) : (
@@ -231,16 +229,16 @@ const AIChat: React.FC = () => {
               </div>
             ))}
 
-            {/* Loading dots - shown only while fetching (before stream starts) */}
+            {/* Loading dots while fetching */}
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center mr-2 mt-1 flex-shrink-0">
+              <div className="flex justify-start items-start gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 mt-1">
                   <span className="material-symbols-outlined text-sm">smart_toy</span>
                 </div>
                 <div className="bg-surface-container rounded-2xl px-4 py-3 rounded-tl-sm border border-outline-variant flex gap-1.5 items-center">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
                 </div>
               </div>
             )}
@@ -268,12 +266,12 @@ const AIChat: React.FC = () => {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 placeholder="Ask me anything about your studies..."
-                disabled={isLoading || isStreamingRef.current}
+                disabled={isLoading || isTyping}
                 className="flex-grow px-4 py-3 rounded-xl bg-surface-container-low border border-transparent focus:border-primary focus:bg-surface focus:outline-none text-sm disabled:opacity-60"
               />
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || isTyping}
                 className="bg-primary text-white w-12 h-12 flex items-center justify-center rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
               >
                 <span className="material-symbols-outlined">send</span>
