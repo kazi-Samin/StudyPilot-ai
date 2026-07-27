@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { aiService } from '../services/aiService';
 
 interface Message {
@@ -31,8 +33,13 @@ const AIChat: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Keep only last few messages for context to save tokens
-      const history = messages.slice(-6).map(m => ({ role: m.role === 'ai' ? 'model' : 'user', parts: [{ text: m.content }] }));
+      // Keep only last few messages for context, and skip the initial AI greeting
+      // Gemini requires the first message in history to be from 'user'
+      const history = messages
+        .filter((m, index) => index !== 0) // Skip the hardcoded greeting
+        .slice(-6)
+        .map(m => ({ role: m.role === 'ai' ? 'model' : 'user', parts: [{ text: m.content }] }));
+        
       const response = await aiService.chat({ message: text, history });
       
       setMessages(prev => [...prev, { role: 'ai', content: response.response }]);
@@ -51,8 +58,8 @@ const AIChat: React.FC = () => {
 
   return (
     <div className="h-[calc(100vh-72px)] bg-surface-container-low flex flex-col">
-      <div className="max-w-[1000px] w-full mx-auto flex-grow flex flex-col p-5">
-        <div className="bg-surface border border-outline-variant rounded-2xl flex-grow flex flex-col overflow-hidden shadow-sm">
+      <div className="max-w-[1000px] w-full mx-auto flex-grow flex flex-col p-5 min-h-0">
+        <div className="bg-surface border border-outline-variant rounded-2xl flex-grow flex flex-col min-h-0 overflow-hidden shadow-sm">
           
           {/* Header */}
           <div className="p-4 border-b border-outline-variant bg-surface-container flex items-center gap-3">
@@ -71,12 +78,20 @@ const AIChat: React.FC = () => {
           <div className="flex-grow overflow-y-auto p-5 space-y-6">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] rounded-2xl p-4 ${
+                <div className={`max-w-[85%] rounded-2xl p-4 ${
                   msg.role === 'user' 
                     ? 'bg-primary text-white rounded-tr-sm' 
-                    : 'bg-surface-container text-on-surface rounded-tl-sm border border-outline-variant'
+                    : 'bg-surface-container text-on-surface rounded-tl-sm border border-outline-variant shadow-sm'
                 }`}>
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                  {msg.role === 'ai' ? (
+                    <div className="markdown-body prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  )}
                 </div>
               </div>
             ))}
@@ -114,7 +129,6 @@ const AIChat: React.FC = () => {
                 onChange={e => setInput(e.target.value)}
                 placeholder="Ask me anything about your studies..."
                 className="flex-grow px-4 py-3 rounded-xl bg-surface-container-low border border-transparent focus:border-primary focus:bg-surface focus:outline-none"
-                disabled={isLoading}
               />
               <button 
                 type="submit" 

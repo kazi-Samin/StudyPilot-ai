@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Home: React.FC = () => {
+  const { user } = useAuth();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [email, setEmail] = useState('');
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      toast.success("Subscribed successfully! Check your inbox.");
+      setEmail('');
+    }
+  };
 
   const toggleFaq = (index: number) => {
     if (openFaq === index) {
@@ -34,7 +46,11 @@ const Home: React.FC = () => {
             StudyPilot analyzes your learning style and generates optimized, adaptive study plans that guarantee better retention and higher grades.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register" className="bg-primary text-on-primary px-8 py-3 rounded-full font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all duration-200 inline-block text-lg">Start for free</Link>
+            {user ? (
+              <Link to="/dashboard" className="bg-primary text-on-primary px-8 py-3 rounded-full font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all duration-200 inline-block text-lg">Go to Dashboard</Link>
+            ) : (
+              <Link to="/register" className="bg-primary text-on-primary px-8 py-3 rounded-full font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all duration-200 inline-block text-lg">Start for free</Link>
+            )}
             <Link to="/explore" className="bg-surface-container-high text-on-surface px-8 py-3 rounded-full font-semibold hover:bg-surface-container transition-all duration-200 inline-block border border-outline-variant text-lg">Explore Plans</Link>
           </div>
         </div>
@@ -188,7 +204,11 @@ const Home: React.FC = () => {
                 <li className="flex items-center gap-3"><span className="material-symbols-outlined text-secondary">check_circle</span> Community access</li>
                 <li className="flex items-center gap-3"><span className="material-symbols-outlined text-secondary">check_circle</span> Standard templates</li>
               </ul>
-              <Link to="/register" className="bg-surface-container-high text-on-surface px-6 py-2.5 rounded-full font-semibold hover:bg-surface-container transition-all duration-200 inline-block border border-outline-variant w-full text-center">Get Started</Link>
+              {user ? (
+                <Link to="/dashboard" className="bg-surface-container-high text-on-surface px-6 py-2.5 rounded-full font-semibold hover:bg-surface-container transition-all duration-200 inline-block border border-outline-variant w-full text-center">Go to Dashboard</Link>
+              ) : (
+                <Link to="/register" className="bg-surface-container-high text-on-surface px-6 py-2.5 rounded-full font-semibold hover:bg-surface-container transition-all duration-200 inline-block border border-outline-variant w-full text-center">Get Started</Link>
+              )}
             </div>
             <div className="bg-inverse-surface text-surface rounded-[20px] p-10 flex flex-col border-none relative overflow-hidden shadow-lg">
               <div className="absolute top-5 right-5 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">POPULAR</div>
@@ -201,7 +221,11 @@ const Home: React.FC = () => {
                 <li className="flex items-center gap-3"><span className="material-symbols-outlined text-secondary-container">check_circle</span> Calendar integration</li>
                 <li className="flex items-center gap-3"><span className="material-symbols-outlined text-secondary-container">check_circle</span> Priority support</li>
               </ul>
-              <Link to="/register" className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all duration-200 inline-block w-full text-center">Start Free Trial</Link>
+              {user ? (
+                <Link to="/dashboard" className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all duration-200 inline-block w-full text-center">Go to Dashboard</Link>
+              ) : (
+                <Link to="/register" className="bg-primary text-on-primary px-6 py-2.5 rounded-full font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all duration-200 inline-block w-full text-center">Start Free Trial</Link>
+              )}
             </div>
           </div>
         </div>
@@ -235,14 +259,27 @@ const Home: React.FC = () => {
       </section>
 
       {/* 9. Newsletter */}
-      <section className="py-24 bg-primary text-white text-center">
-        <div className="max-w-[800px] mx-auto px-5">
-          <h2 className="text-3xl font-bold mb-4">Stay ahead of the curve</h2>
-          <p className="text-primary-container-low text-lg mb-8 text-on-primary-container">Join 10,000+ students getting study tips and platform updates.</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-            <input type="email" placeholder="Enter your email" className="px-5 py-3 rounded-full text-on-surface flex-grow focus:outline-none focus:ring-2 focus:ring-secondary" />
-            <button className="bg-secondary hover:bg-secondary-container hover:text-on-surface text-white px-8 py-3 rounded-full font-bold transition-colors">Subscribe</button>
-          </div>
+      <section className="py-24 bg-gradient-to-r from-primary via-[#4f46e5] to-[#7e22ce] text-white text-center relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
+          <div className="absolute -top-[100px] -left-[100px] w-[300px] h-[300px] rounded-full bg-white blur-[80px]"></div>
+          <div className="absolute top-[50%] right-[10%] w-[400px] h-[400px] rounded-full bg-secondary blur-[100px]"></div>
+        </div>
+
+        <div className="max-w-[800px] mx-auto px-5 relative z-10">
+          <h2 className="text-4xl font-bold mb-4 tracking-tight">Stay ahead of the curve</h2>
+          <p className="text-white/80 text-lg mb-10 max-w-lg mx-auto">Join 10,000+ top-tier students getting advanced study tactics and platform updates delivered weekly.</p>
+          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email address" 
+              required
+              className="px-6 py-4 rounded-full text-on-surface flex-grow focus:outline-none focus:ring-4 focus:ring-secondary/50 shadow-lg placeholder:text-outline" 
+            />
+            <button type="submit" className="bg-secondary hover:bg-secondary-container hover:text-on-surface text-white px-8 py-4 rounded-full font-bold transition-all duration-300 shadow-lg hover:-translate-y-1">Subscribe</button>
+          </form>
         </div>
       </section>
     </div>

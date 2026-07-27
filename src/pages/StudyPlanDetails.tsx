@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studyPlanService } from '../services/studyPlanService';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 const StudyPlanDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [rating, setRating] = useState(5);
@@ -17,6 +18,41 @@ const StudyPlanDetails: React.FC = () => {
     queryFn: () => studyPlanService.getById(id!),
     enabled: !!id,
   });
+
+  const cloneMutation = useMutation({
+    mutationFn: (planData: Partial<any>) => studyPlanService.create(planData),
+    onSuccess: () => {
+      toast.success("Study plan started! Track your progress on the dashboard.");
+      navigate('/dashboard');
+    },
+    onError: () => {
+      toast.error("Failed to start the plan. Please try again.");
+    }
+  });
+
+  const handleStartPlan = () => {
+    if (!user) {
+      toast.error("Please login to start this plan");
+      navigate('/login');
+      return;
+    }
+    
+    if (plan) {
+      // Clone the plan without user-specific or db-specific fields
+      const clonedPlan = {
+        title: plan.title,
+        shortDescription: plan.shortDescription,
+        fullDescription: plan.fullDescription,
+        subject: plan.subject,
+        difficulty: plan.difficulty,
+        duration: plan.duration,
+        topics: plan.topics,
+        schedule: plan.schedule,
+        imageUrl: plan.imageUrl,
+      };
+      cloneMutation.mutate(clonedPlan);
+    }
+  };
 
   const { data: reviews, isLoading: reviewsLoading } = useQuery({
     queryKey: ['reviews', id],
@@ -151,7 +187,18 @@ const StudyPlanDetails: React.FC = () => {
                 <span className="font-medium">{plan.subject}</span>
               </div>
             </div>
-            <button className="btn-primary w-full mt-6">Start This Plan</button>
+            <button 
+              onClick={handleStartPlan} 
+              disabled={cloneMutation.isPending}
+              className="btn-primary w-full mt-6 disabled:opacity-70 flex justify-center items-center gap-2"
+            >
+              {cloneMutation.isPending ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Starting...
+                </>
+              ) : 'Start This Plan'}
+            </button>
           </div>
         </div>
       </div>

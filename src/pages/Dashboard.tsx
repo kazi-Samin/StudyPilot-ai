@@ -2,6 +2,8 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { studyPlanService } from '../services/studyPlanService';
 
 const activityData = [
   { day: 'Mon', hours: 2 },
@@ -23,6 +25,11 @@ const COLORS = ['#004ac6', '#006b5f', '#8e3c00', '#2563eb'];
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+
+  const { data: myPlans, isLoading } = useQuery({
+    queryKey: ['myPlans'],
+    queryFn: () => studyPlanService.getMyPlans(),
+  });
 
   return (
     <div className="min-h-screen bg-background py-10">
@@ -106,6 +113,60 @@ const Dashboard: React.FC = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* My Plans Section */}
+        <div className="mb-10">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-bold text-2xl">My Active Plans</h3>
+            <Link to="/explore" className="text-primary font-semibold hover:underline flex items-center gap-1">
+              Find More <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </Link>
+          </div>
+          
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : myPlans && myPlans.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {myPlans.map((plan: any) => (
+                <Link to={`/study-plans/${plan._id}`} key={plan._id} className="card group cursor-pointer block hover:-translate-y-1 transition-transform duration-300">
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
+                        {plan.subject}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors line-clamp-2">{plan.title}</h3>
+                    <p className="text-on-surface-variant text-sm mb-4 line-clamp-2">{plan.shortDescription}</p>
+                    <div className="flex items-center gap-4 text-sm font-medium text-outline">
+                      <div className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[18px]">schedule</span> {plan.duration}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[18px]">trending_up</span> {plan.difficulty}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="card p-12 text-center bg-surface-container-low border-dashed border-2 border-outline-variant flex flex-col items-center justify-center">
+              <div className="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mb-4 text-primary">
+                <span className="material-symbols-outlined text-4xl">menu_book</span>
+              </div>
+              <h3 className="text-2xl font-bold mb-2">No active study plans</h3>
+              <p className="text-on-surface-variant max-w-md mx-auto mb-6">
+                You haven't started any study plans yet. Generate a customized plan with our Cognitive AI or explore existing templates.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/study-plans/add" className="btn-primary">Generate with AI</Link>
+                <Link to="/explore" className="btn-secondary">Explore Courses</Link>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
