@@ -47,7 +47,7 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-surface-container-low flex items-center justify-center p-5 py-20">
       <div className="card w-full max-w-md p-8 shadow-lg">
         <div className="text-center mb-8">
-          <span className="material-symbols-outlined text-5xl text-primary mb-2">menu_book</span>
+          <span className="material-symbols-outlined text-5xl text-primary mb-2">auto_stories</span>
           <h1 className="text-3xl font-bold">Welcome Back</h1>
           <p className="text-on-surface-variant mt-2">Log in to continue your learning journey</p>
         </div>

@@ -15,7 +15,7 @@ const StudyPlanCard: React.FC<Props> = ({ plan }) => {
           <img src={plan.imageUrl} alt={plan.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-outline">
-            <span className="material-symbols-outlined text-5xl">menu_book</span>
+            <span className="material-symbols-outlined text-5xl">auto_stories</span>
           </div>
         )}
         <div className="absolute top-3 right-3 bg-surface/90 backdrop-blur text-sm px-3 py-1 rounded-full font-medium shadow-sm">

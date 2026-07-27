@@ -155,7 +155,7 @@ const Dashboard: React.FC = () => {
           ) : (
             <div className="card p-12 text-center bg-surface-container-low border-dashed border-2 border-outline-variant flex flex-col items-center justify-center">
               <div className="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mb-4 text-primary">
-                <span className="material-symbols-outlined text-4xl">menu_book</span>
+                <span className="material-symbols-outlined text-4xl">auto_stories</span>
               </div>
               <h3 className="text-2xl font-bold mb-2">No active study plans</h3>
               <p className="text-on-surface-variant max-w-md mx-auto mb-6">
