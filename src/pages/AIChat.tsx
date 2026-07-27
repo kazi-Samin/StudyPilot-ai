@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { aiService } from '../services/aiService';
+import { useAuth } from '../context/AuthContext';
 
 interface Message {
   role: 'user' | 'ai';
@@ -9,23 +10,34 @@ interface Message {
 }
 
 const AIChat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = localStorage.getItem('studyPilot_aiChat');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error parsing chat history:', e);
-      }
-    }
-    return [
-      { role: 'ai', content: 'Hello! I am your StudyPilot AI tutor. How can I help you with your studies today?' }
-    ];
-  });
+  const { user } = useAuth();
+  // @ts-ignore
+  const userId = user ? (user._id || user.id || user.email || 'user') : 'guest';
+  const storageKey = `studyPilot_aiChat_${userId}`;
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('studyPilot_aiChat', JSON.stringify(messages));
-  }, [messages]);
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        setMessages(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error parsing chat history:', e);
+        setMessages([{ role: 'ai', content: 'Hello! I am your StudyPilot AI tutor. How can I help you with your studies today?' }]);
+      }
+    } else {
+      setMessages([{ role: 'ai', content: 'Hello! I am your StudyPilot AI tutor. How can I help you with your studies today?' }]);
+    }
+    setIsLoaded(true);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (isLoaded && messages.length > 0) {
+      localStorage.setItem(storageKey, JSON.stringify(messages));
+    }
+  }, [messages, storageKey, isLoaded]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
