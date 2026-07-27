@@ -17,6 +17,21 @@ const AIChat: React.FC = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+
+  useEffect(() => {
+    const fetchKey = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const res = await fetch(`${apiUrl}/ai/key`);
+        const data = await res.json();
+        if (data.key) setApiKey(data.key);
+      } catch (e) {
+        console.error('Failed to fetch API key');
+      }
+    };
+    fetchKey();
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem(storageKey);
@@ -59,46 +74,70 @@ const AIChat: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Keep only last few messages for context, and skip the initial AI greeting
       const historyToSend = messages
         .filter((m, index) => index !== 0)
         .slice(-6)
         .map(m => ({ role: m.role === 'ai' ? 'model' : 'user', parts: [{ text: m.content }] }));
         
+      historyToSend.push({ role: 'user', parts: [{ text: text }] });
+
       // Add empty AI message placeholder
       setMessages(prev => [...prev, { role: 'ai', content: '' }]);
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/ai/chat/stream`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: historyToSend })
-      });
+      let response;
+      
+      if (apiKey) {
+        // Direct to Google API for perfect streaming (bypasses Vercel buffering)
+        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:streamGenerateContent?alt=sse&key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: historyToSend })
+        });
+      } else {
+        // Fallback to backend
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        response = await fetch(`${apiUrl}/ai/chat/stream`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, history: historyToSend.slice(0, -1) })
+        });
+      }
 
-      if (!response.body) throw new Error('ReadableStream not yet supported.');
+      if (!response.body) throw new Error('ReadableStream not supported.');
       
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
+      
+      let isFirstChunk = true;
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
         
-        const lines = chunk.split('\n\n');
+        if (isFirstChunk) {
+          setIsLoading(false); // Hide loading dots immediately
+          isFirstChunk = false;
+        }
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
         for (const line of lines) {
           if (line.startsWith('data: ')) {
-            const dataStr = line.slice(6);
-            if (dataStr === '[DONE]') break;
+            const dataStr = line.slice(6).trim();
+            if (dataStr === '[DONE]' || !dataStr) continue;
             try {
               const data = JSON.parse(dataStr);
-              if (data.text) {
+              // Handle direct Gemini API format or our custom backend format
+              const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || data.text || '';
+              
+              if (textContent) {
                 setMessages(prev => {
                   const newMessages = [...prev];
                   const lastIndex = newMessages.length - 1;
                   newMessages[lastIndex] = { 
                     ...newMessages[lastIndex], 
-                    content: newMessages[lastIndex].content + data.text 
+                    content: newMessages[lastIndex].content + textContent 
                   };
                   return newMessages;
                 });
