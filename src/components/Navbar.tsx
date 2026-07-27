@@ -17,7 +17,7 @@ const Navbar: React.FC = () => {
     <nav className="fixed w-full bg-surface/90 backdrop-blur-md z-50 border-b border-outline-variant h-[72px] flex items-center">
       <div className="max-w-[1280px] mx-auto w-full px-5 lg:px-12 flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold text-primary flex items-center gap-2">
-          <span className="material-symbols-outlined text-3xl">flight_takeoff</span>
+          <span className="material-symbols-outlined text-3xl">menu_book</span>
           StudyPilot
         </Link>
 
@@ -25,11 +25,11 @@ const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center gap-8 font-medium">
           <Link to="/explore" className="hover:text-primary transition-colors">Explore</Link>
           <Link to="/about" className="hover:text-primary transition-colors">About</Link>
+          <Link to="/ai-chat" className="hover:text-primary transition-colors">AI Chat</Link>
           
           {user ? (
             <>
               <Link to="/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
-              <Link to="/ai-chat" className="hover:text-primary transition-colors">AI Chat</Link>
               <Link to="/study-plans/manage" className="hover:text-primary transition-colors">My Plans</Link>
               <div className="group relative cursor-pointer">
                 <div className="flex items-center gap-2 text-primary font-semibold">
@@ -61,10 +61,10 @@ const Navbar: React.FC = () => {
         <div className="absolute top-[72px] left-0 w-full bg-surface border-b border-outline-variant md:hidden p-5 flex flex-col gap-4 shadow-lg">
           <Link to="/explore" onClick={() => setIsOpen(false)} className="py-2">Explore</Link>
           <Link to="/about" onClick={() => setIsOpen(false)} className="py-2">About</Link>
+          <Link to="/ai-chat" onClick={() => setIsOpen(false)} className="py-2">AI Chat</Link>
           {user ? (
             <>
               <Link to="/dashboard" onClick={() => setIsOpen(false)} className="py-2">Dashboard</Link>
-              <Link to="/ai-chat" onClick={() => setIsOpen(false)} className="py-2">AI Chat</Link>
               <Link to="/study-plans/manage" onClick={() => setIsOpen(false)} className="py-2">My Plans</Link>
               <Link to="/study-plans/add" onClick={() => setIsOpen(false)} className="py-2">Create Plan</Link>
               <button onClick={() => { handleLogout(); setIsOpen(false); }} className="py-2 text-left text-error">Logout</button>
