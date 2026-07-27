@@ -27,10 +27,6 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleDemoLogin = () => {
-    setEmail('demo@studypilot.com');
-    setPassword('demo1234');
-  };
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
@@ -86,14 +82,6 @@ const Login: React.FC = () => {
         </form>
 
         <div className="mt-6 flex flex-col gap-4">
-          <button 
-            onClick={handleDemoLogin}
-            type="button"
-            className="w-full bg-surface-container text-on-surface py-3 rounded-xl font-medium hover:bg-surface-container-high transition-colors"
-          >
-            Use Demo Account
-          </button>
-          
           <div className="relative flex items-center py-2">
             <div className="flex-grow border-t border-outline-variant"></div>
             <span className="flex-shrink-0 mx-4 text-outline text-sm">Or continue with</span>
